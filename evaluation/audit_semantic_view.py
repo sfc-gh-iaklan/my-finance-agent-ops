@@ -517,7 +517,10 @@ def main():
     ddl_file = args.ddl_file
     if not ddl_file and not args.live:
         # Default to the environment's SV YAML from config (resolved against the instance dir).
-        rel = load_config()["environments"][args.environment]["sv_yaml_path"]
+        env = load_config()["environments"][args.environment]
+        rel = env.get("sv_yaml_path", "")
+        if not rel:
+            parser.error("No --ddl-file provided and no sv_yaml_path in config. Use --live with --semantic-view instead.")
         ddl_file = instance_path(rel)
 
     if ddl_file:

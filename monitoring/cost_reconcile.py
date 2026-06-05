@@ -31,7 +31,7 @@ import sys
 import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "evaluation"))
-from utils import get_connection, execute_sql, load_config  # noqa: E402
+from utils import get_connection, execute_sql, load_config, get_framework_config  # noqa: E402
 
 
 def _scalar(rows, key, default=0.0):
@@ -82,10 +82,10 @@ def main():
     args = parser.parse_args()
 
     cfg = load_config()
-    ev = cfg["eval"]
+    fw = get_framework_config()
     conn = get_connection(args.environment)
     try:
-        r = reconcile(conn, ev["database"], ev["monitoring_schema"], args.days)
+        r = reconcile(conn, fw["database"], fw["schema"], args.days)
     finally:
         conn.close()
 

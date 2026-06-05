@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from utils import (
     get_connection, load_question_bank, load_thresholds, load_config,
     execute_sql, call_cortex_analyst, log_eval_run, format_results_table,
+    get_semantic_views, get_framework_config,
 )
 from llm_judge import judge_sql_result, judge_ambiguous_result
 
@@ -149,7 +150,7 @@ def run_evaluation(
     conn = get_connection(environment)
     thresholds = load_thresholds()
     env_thresholds = thresholds.get("semantic_view", {}).get(environment, thresholds["semantic_view"]["default"])
-    env_database = load_config()["environments"][environment]["database"]
+    env_database = get_framework_config()["database"]
 
     all_results = []
     for category in categories:
@@ -246,7 +247,7 @@ def main():
     categories = [c.strip() for c in args.categories.split(",")]
     result = run_evaluation(
         environment=args.environment,
-        semantic_view=args.semantic_view or load_config()["environments"][args.environment]["semantic_view"],
+        semantic_view=args.semantic_view or get_semantic_views(args.environment)[0]["fqn"],
         categories=categories,
         git_sha=args.git_sha,
         git_branch=args.git_branch,

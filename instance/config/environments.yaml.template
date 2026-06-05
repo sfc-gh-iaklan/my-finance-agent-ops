@@ -1,53 +1,50 @@
 # Instance config — YOUR project's configuration.
 #
-# Rename this file to environments.yaml after filling in your values.
+# This file is populated by the bootstrap-from-existing skill, or manually.
+# Rename to environments.yaml after filling in your values.
+#
 # Universal defaults (llm models, Snowflake credit pricing) live in the
 # framework's config/defaults.yaml and are merged UNDER this file by
 # evaluation/utils.load_config() — so you may override them here if needed.
 #
 # All *_path / *_dir values are resolved relative to THIS instance directory.
 
+# Snowflake connection (named connection in ~/.snowflake/connections.toml)
+connection_name: default
+
+# Framework infrastructure — where the framework stores its own tables/views.
+# This is the ONLY schema the framework creates objects in.
+framework:
+  database: {{FRAMEWORK_DB}}        # e.g. MY_PROJECT_OPS or an existing DB
+  schema: {{FRAMEWORK_SCHEMA}}      # e.g. AGENTOPS (created if not exists)
+  warehouse: {{WAREHOUSE}}          # existing warehouse to use
+
+# Environments — references to YOUR existing semantic views and agents.
+# Only 'dev' is required for bootstrapping. 'prod' is populated when CI/CD is set up.
 environments:
   dev:
-    database: {{PROJECT_NAME}}_DEV            # e.g. MY_PROJECT_DEV
-    schema: ANALYTICS                         # Schema holding your data tables
-    semantic_schema: SEMANTIC                  # Schema for semantic views + agents
-    warehouse: {{PROJECT_NAME}}_WH            # e.g. MY_PROJECT_WH
-    connection_name: default                  # Named connection in ~/.snowflake/connections.toml
-    semantic_view: {{PROJECT_NAME}}_DEV.SEMANTIC.{{SV_NAME}}
-    agent_name: {{PROJECT_NAME}}_DEV.SEMANTIC.{{AGENT_NAME}}
-    semantic_view_short: {{SV_NAME}}
-    agent_short: {{AGENT_NAME}}
-    sv_yaml_path: semantic_views/dev/{{sv_filename}}.yaml
-    agent_sql_path: agents/dev/{{agent_filename}}.sql
+    semantic_views:
+      # List of semantic views to govern in this environment.
+      # Each entry has:
+      #   fqn: fully qualified name (DATABASE.SCHEMA.VIEW_NAME)
+      #   short_name: display name used in reports and question banks
+      - fqn: {{SV_FQN}}
+        short_name: {{SV_SHORT_NAME}}
 
-  prod:
-    database: {{PROJECT_NAME}}_PROD           # e.g. MY_PROJECT_PROD
-    schema: ANALYTICS
-    semantic_schema: SEMANTIC
-    warehouse: {{PROJECT_NAME}}_WH
-    connection_name: default
-    semantic_view: {{PROJECT_NAME}}_PROD.SEMANTIC.{{SV_NAME}}
-    agent_name: {{PROJECT_NAME}}_PROD.SEMANTIC.{{AGENT_NAME}}
-    semantic_view_short: {{SV_NAME}}
-    agent_short: {{AGENT_NAME}}
-    sv_yaml_path: semantic_views/prod/{{sv_filename}}.yaml
-    agent_sql_path: agents/prod/{{agent_filename}}.sql
+    agents:
+      # List of agents to govern in this environment.
+      # Each entry has:
+      #   fqn: fully qualified name (DATABASE.SCHEMA.AGENT_NAME)
+      #   short_name: display name used in reports
+      #   semantic_views: list of SV FQNs bound to this agent (resolved from DESCRIBE AGENT)
+      - fqn: {{AGENT_FQN}}
+        short_name: {{AGENT_SHORT_NAME}}
+        semantic_views:
+          - {{SV_FQN}}
 
-eval:
-  database: {{PROJECT_NAME}}_EVAL             # e.g. MY_PROJECT_EVAL
-  schema: RESULTS
-  monitoring_schema: MONITORING
-  observability_schema: OBSERVABILITY
-  warehouse: {{PROJECT_NAME}}_WH
-  dataset_table: {{AGENT_NAME}}_EVAL_DATASET
-
-# RBAC role names (created by setup/04_rbac_setup.sql).
-roles:
-  analyst: {{PROJECT_NAME}}_ANALYST
-  reviewer: {{PROJECT_NAME}}_REVIEWER
-  deployer: {{PROJECT_NAME}}_DEPLOYER
-  admin: {{PROJECT_NAME}}_ADMIN
+  prod:  # populated later when CI/CD promotion is configured
+    semantic_views: []
+    agents: []
 
 # Question bank locations (relative to this instance directory).
 question_banks:

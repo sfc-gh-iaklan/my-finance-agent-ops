@@ -108,6 +108,12 @@ def get_connection(environment: str = "dev") -> snowflake.connector.SnowflakeCon
     config = load_config()
     env_config = config["environments"][environment]
 
+    # Resolve warehouse: new format uses framework.warehouse, old format uses env warehouse
+    if _is_new_config_format(config):
+        warehouse = config.get("framework", {}).get("warehouse", "COMPUTE_WH")
+    else:
+        warehouse = env_config.get("warehouse", "COMPUTE_WH")
+
     account = os.getenv("SNOWFLAKE_ACCOUNT")
     user = os.getenv("SNOWFLAKE_USER")
     if account and user and os.getenv("SNOWFLAKE_PRIVATE_KEY"):
@@ -119,7 +125,7 @@ def get_connection(environment: str = "dev") -> snowflake.connector.SnowflakeCon
             private_key=_private_key_from_env(),
             authenticator="snowflake_jwt",
             role=os.getenv("SNOWFLAKE_ROLE"),
-            warehouse=env_config["warehouse"],
+            warehouse=warehouse,
         )
     elif account and user:
         # Env-var password auth (fallback when no key-pair is provided).
@@ -128,10 +134,12 @@ def get_connection(environment: str = "dev") -> snowflake.connector.SnowflakeCon
             user=user,
             password=os.getenv("SNOWFLAKE_PASSWORD"),
             role=os.getenv("SNOWFLAKE_ROLE"),
-            warehouse=env_config["warehouse"],
+            warehouse=warehouse,
         )
     else:
-        conn_name = os.getenv("SNOWFLAKE_CONNECTION_NAME") or env_config.get("connection_name", "default")
+        conn_name = (os.getenv("SNOWFLAKE_CONNECTION_NAME")
+                     or config.get("connection_name")
+                     or env_config.get("connection_name", "default"))
         params = _resolve_connection_params(conn_name)
         key_path = params.get("private_key_path") or params.get("private_key_file")
         if key_path and params.get("authenticator") in ("snowflake_jwt", "SNOWFLAKE_JWT"):
@@ -140,14 +148,20 @@ def get_connection(environment: str = "dev") -> snowflake.connector.SnowflakeCon
                 user=params["user"],
                 private_key=_load_private_key(key_path),
                 role=params.get("role"),
-                warehouse=env_config["warehouse"],
+                warehouse=warehouse,
             )
         else:
             conn = snowflake.connector.connect(connection_name=conn_name)
-            conn.cursor().execute(f"USE WAREHOUSE {env_config['warehouse']}")
+            conn.cursor().execute(f"USE WAREHOUSE {warehouse}")
 
-    conn.cursor().execute(f"USE DATABASE {env_config['database']}")
-    conn.cursor().execute(f"USE SCHEMA {env_config.get('semantic_schema', env_config['schema'])}")
+    # Set context: for new format use framework DB; for old format use env DB
+    if _is_new_config_format(config):
+        fw = config.get("framework", {})
+        conn.cursor().execute(f"USE DATABASE {fw['database']}")
+        conn.cursor().execute(f"USE SCHEMA {fw['schema']}")
+    else:
+        conn.cursor().execute(f"USE DATABASE {env_config['database']}")
+        conn.cursor().execute(f"USE SCHEMA {env_config.get('semantic_schema', env_config['schema'])}")
     return conn
 
 
@@ -162,6 +176,68 @@ def _load_config_cached(inst: str) -> dict:
 def load_config() -> dict:
     """Merged config: framework defaults overlaid by the active instance config."""
     return _load_config_cached(instance_dir())
+
+
+def _is_new_config_format(config: dict) -> bool:
+    """Detect whether the config uses the new multi-object format.
+
+    New format: environments.dev.semantic_views is a list.
+    Old format: environments.dev.semantic_view is a string.
+    """
+    dev = config.get("environments", {}).get("dev", {})
+    return isinstance(dev.get("semantic_views"), list)
+
+
+def get_framework_config() -> dict:
+    """Return the framework section (database, schema, warehouse for framework objects).
+
+    Supports both config formats:
+    - New format: config["framework"] with database/schema/warehouse
+    - Old format: config["eval"] with database/schema mapped to framework equivalents
+    """
+    config = load_config()
+    if "framework" in config:
+        return config["framework"]
+    # Backwards compat: map old 'eval' section to framework shape
+    ev = config.get("eval", {})
+    return {
+        "database": ev.get("database", ""),
+        "schema": ev.get("schema", "RESULTS"),
+        "warehouse": ev.get("warehouse", ""),
+    }
+
+
+def get_semantic_views(environment: str = "dev") -> list:
+    """Return list of semantic view dicts for an environment.
+
+    New format returns the list directly. Old format wraps the single entry.
+    Each dict has: {"fqn": "...", "short_name": "..."}
+    """
+    config = load_config()
+    env = config["environments"][environment]
+    if _is_new_config_format(config):
+        return env.get("semantic_views", [])
+    # Old format: single semantic_view string
+    fqn = env.get("semantic_view", "")
+    short = env.get("semantic_view_short", fqn.split(".")[-1] if fqn else "")
+    return [{"fqn": fqn, "short_name": short}] if fqn else []
+
+
+def get_agents(environment: str = "dev") -> list:
+    """Return list of agent dicts for an environment.
+
+    New format returns the list directly. Old format wraps the single entry.
+    Each dict has: {"fqn": "...", "short_name": "...", "semantic_views": [...]}
+    """
+    config = load_config()
+    env = config["environments"][environment]
+    if _is_new_config_format(config):
+        return env.get("agents", [])
+    # Old format: single agent_name string
+    fqn = env.get("agent_name", "")
+    short = env.get("agent_short", fqn.split(".")[-1] if fqn else "")
+    sv_fqn = env.get("semantic_view", "")
+    return [{"fqn": fqn, "short_name": short, "semantic_views": [sv_fqn] if sv_fqn else []}] if fqn else []
 
 
 @functools.lru_cache(maxsize=None)
@@ -385,7 +461,7 @@ def log_eval_run(
         else:
             placeholders.append("%s")
             binds.append(v)
-    ev = load_config()["eval"]
+    ev = get_framework_config()
     fqn = f"{ev['database']}.{ev['schema']}.{table}"
     sql = f"INSERT INTO {fqn} ({', '.join(cols)}) SELECT {', '.join(placeholders)}"
     conn.cursor().execute(sql, tuple(binds))

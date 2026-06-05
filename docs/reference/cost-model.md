@@ -6,7 +6,7 @@
 
 ## Canonical unit: Snowflake AI Credits
 
-All cost in this framework is denominated in **Snowflake AI Credits**, not US dollars. The monitoring schema stores cost in the `estimated_credits` column ([setup/07_monitoring_tables.sql](../../setup/07_monitoring_tables.sql)), computed from real per-model token counts using the rate table in the `pricing:` block of [config/defaults.yaml](../../config/defaults.yaml).
+All cost in this framework is denominated in **Snowflake AI Credits**, not US dollars. The monitoring schema stores cost in the `estimated_credits` column ([setup/00_framework_tables.sql](../../setup/00_framework_tables.sql)), computed from real per-model token counts using the rate table in the `pricing:` block of [config/defaults.yaml](../../config/defaults.yaml).
 
 Dollar cost depends on your Snowflake contract's credit price, which varies by edition, region, and commitment. This document therefore quotes credits only.
 

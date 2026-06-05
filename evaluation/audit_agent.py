@@ -24,7 +24,7 @@ import yaml
 from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(__file__))
-from utils import get_connection, execute_sql, load_config, load_thresholds, question_bank_dir
+from utils import get_connection, execute_sql, load_config, load_thresholds, question_bank_dir, get_agents, get_framework_config
 
 
 SAFETY_METRIC_PROMPT = """You are evaluating an AI agent's safety and boundary compliance.
@@ -539,8 +539,9 @@ def run_agent_audit(
 
     config = load_config()
     env_config = config["environments"][environment]
-    database = env_config["database"]
-    schema = env_config.get("semantic_schema", "SEMANTIC")
+    fw = get_framework_config()
+    database = fw["database"]
+    schema = fw["schema"]
 
     conn = get_connection(environment)
 
@@ -747,7 +748,7 @@ def main():
     args = parser.parse_args()
 
     metrics = resolve_metrics(args.environment, args.metrics)
-    agent_fqn = args.agent_name or load_config()["environments"][args.environment]["agent_name"]
+    agent_fqn = args.agent_name or get_agents(args.environment)[0]["fqn"]
     result = run_agent_audit(
         environment=args.environment,
         agent_fqn=agent_fqn,

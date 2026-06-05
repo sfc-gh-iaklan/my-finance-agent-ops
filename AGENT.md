@@ -53,17 +53,9 @@ Feature branch → PR (CI: deploy to DEV + evaluate) → Merge to main → CD: p
 ```
 Snowflake_AgentOps_Framework/
 ├── .cortex/skills/                     # Cortex Code skills for guided setup
-│   ├── bootstrap-framework.md         # Interactive Snowflake object creation
-│   └── configure-instance.md          # Config population and validation
-├── setup/                              # Snowflake setup SQL (token-rendered)
-│   ├── 01_create_databases.sql        # DEV/PROD/EVAL databases, schemas, warehouse
-│   ├── 04_rbac_setup.sql              # Roles and grants
-│   ├── 05_observability_setup.sql     # Views over ai_observability_events
-│   ├── 07_monitoring_tables.sql       # Feedback, usage, health, alert tables
-│   ├── 08_monitoring_tasks.sql        # Scheduled Tasks (daily + weekly)
-│   ├── 09_monitoring_views.sql        # Trend views for Snowsight dashboards
-│   ├── 10_monitoring_alerts.sql       # Snowflake Alerts (7)
-│   ├── 11_interaction_quality_engine.sql  # Rules-based interaction quality
+│   └── bootstrap-from-existing.md    # Bootstrap from existing Snowflake environment
+├── setup/                              # Snowflake setup SQL
+│   ├── 00_framework_tables.sql        # All framework objects (tables, views, alerts, tasks)
 │   └── deploy.py                      # Deploy SV/agent to an env (used by CI)
 ├── evaluation/                         # Evaluation engine (config-driven)
 │   ├── audit_semantic_view.py          # Best practices audit

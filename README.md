@@ -84,14 +84,15 @@ Built for data teams who want to **self-serve semantic view development** while 
 Open this repo in Cortex Code and invoke the bootstrap skill:
 
 ```
-/bootstrap-framework
+/bootstrap-from-existing
 ```
 
 The skill will interactively:
-1. Ask for your project name, semantic view name, and agent name
-2. Generate your `instance/config/environments.yaml` from the template
-3. Execute the SQL setup scripts to create all Snowflake objects
-4. Verify the setup and suggest next steps
+1. Discover your existing semantic views and agents
+2. Let you select which to bring under governance
+3. Ask for a database + schema to store framework tables
+4. Generate your `instance/config/environments.yaml`
+5. Execute the setup SQL to create framework objects
 
 ### Manual Setup
 
@@ -122,8 +123,7 @@ cp schedules.yaml.template schedules.yaml
 ```
 Snowflake_AgentOps_Framework/
 ├── .cortex/skills/                     # Cortex Code skills for guided setup
-│   ├── bootstrap-framework.md         # Interactive Snowflake object creation
-│   └── configure-instance.md          # Config population and validation
+│   └── bootstrap-from-existing.md    # Bootstrap from existing Snowflake environment
 ├── .github/workflows/                  # CI/CD pipelines
 │   ├── semantic_view_ci.yml            # On PR: audit → evaluate → comment
 │   ├── semantic_view_cd.yml            # On merge: audit gate → eval → promote
@@ -161,15 +161,8 @@ Snowflake_AgentOps_Framework/
 │   ├── cost_reconcile.py             # Reconcile estimated vs actual AI Credits
 │   ├── snowflake.yml.template         # SiS deploy descriptor
 │   └── pyproject.toml                 # SiS package dependencies
-├── setup/                              # Snowflake setup SQL (token-rendered)
-│   ├── 01_create_databases.sql        # DEV/PROD/EVAL databases, schemas, warehouse
-│   ├── 04_rbac_setup.sql              # Analyst/Reviewer/Deployer/Admin roles
-│   ├── 05_observability_setup.sql     # Views over ai_observability_events
-│   ├── 07_monitoring_tables.sql       # Feedback, usage, health, alert tables
-│   ├── 08_monitoring_tasks.sql        # Scheduled Tasks (daily + weekly)
-│   ├── 09_monitoring_views.sql        # Trend views for Snowsight dashboards
-│   ├── 10_monitoring_alerts.sql       # Snowflake Alerts (7 alerts)
-│   ├── 11_interaction_quality_engine.sql  # Rules-based interaction quality
+├── setup/                              # Snowflake setup SQL
+│   ├── 00_framework_tables.sql        # All framework objects (tables, views, alerts, tasks)
 │   └── deploy.py                      # Deploy SV/agent to an env (used by CI)
 ├── .gitignore
 ├── AGENT.md                           # CoCo agent instructions

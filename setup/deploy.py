@@ -17,7 +17,7 @@ import sys
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(PROJECT_ROOT, "evaluation"))
-from utils import get_connection, load_config, instance_dir  # noqa: E402
+from utils import get_connection, load_config, instance_dir, _is_new_config_format  # noqa: E402
 
 
 def _strip_sql_comments(sql: str) -> str:
@@ -26,8 +26,13 @@ def _strip_sql_comments(sql: str) -> str:
 
 
 def deploy_agent(conn, environment: str) -> str:
-    cfg = load_config()["environments"][environment]
-    path = os.path.join(instance_dir(), cfg["agent_sql_path"])
+    cfg = load_config()
+    env = cfg["environments"][environment]
+    if _is_new_config_format(cfg):
+        # New format: agents don't have a local SQL path — they already exist
+        raise SystemExit("deploy.py is for CI/CD with local SQL files. "
+                         "In bootstrap-from-existing mode, agents already exist in Snowflake.")
+    path = os.path.join(instance_dir(), env["agent_sql_path"])
     with open(path) as f:
         sql = _strip_sql_comments(f.read())
     conn.cursor().execute(sql)
@@ -35,12 +40,15 @@ def deploy_agent(conn, environment: str) -> str:
 
 
 def deploy_semantic_view(conn, environment: str) -> str:
-    cfg = load_config()["environments"][environment]
-    target = f"{cfg['database']}.{cfg.get('semantic_schema', cfg['schema'])}"
-    path = os.path.join(instance_dir(), cfg["sv_yaml_path"])
+    cfg = load_config()
+    env = cfg["environments"][environment]
+    if _is_new_config_format(cfg):
+        raise SystemExit("deploy.py is for CI/CD with local YAML files. "
+                         "In bootstrap-from-existing mode, semantic views already exist in Snowflake.")
+    target = f"{env['database']}.{env.get('semantic_schema', env['schema'])}"
+    path = os.path.join(instance_dir(), env["sv_yaml_path"])
     with open(path) as f:
         yaml_content = f.read()
-    # Target schema is derived from config (validated env), yaml passed as a bind param.
     conn.cursor().execute(
         f"CALL SYSTEM$CREATE_SEMANTIC_VIEW_FROM_YAML('{target}', %s)", (yaml_content,)
     )

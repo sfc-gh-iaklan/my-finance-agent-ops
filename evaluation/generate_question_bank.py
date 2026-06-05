@@ -48,6 +48,7 @@ from utils import (
     llm_complete,
     get_llm_model,
     load_config,
+    get_framework_config,
     instance_path,
     question_bank_dir,
 )
@@ -275,8 +276,8 @@ def build_adversarial(hints, library_path=ADVERSARIAL_LIBRARY):
 # ---------------------------------------------------------------------------
 def mine_traffic(conn, agent_name_short, limit=50):
     """Return distinct real user questions from agent traces (read-only)."""
-    cfg = load_config()["eval"]
-    fqn = f"{cfg['database']}.{cfg['observability_schema']}.AGENT_REQUEST_SUMMARY"
+    fw = get_framework_config()
+    fqn = f"{fw['database']}.{fw['schema']}.AGENT_REQUEST_SUMMARY"
     sql = f"""
         SELECT DISTINCT user_query
         FROM {fqn}
@@ -410,7 +411,12 @@ def main():
     cfg = load_config()
     env_cfg = cfg["environments"][args.environment]
 
-    sv_path = args.semantic_view_yaml or instance_path(env_cfg["sv_yaml_path"])
+    sv_path = args.semantic_view_yaml
+    if not sv_path:
+        rel = env_cfg.get("sv_yaml_path", "")
+        if not rel:
+            parser.error("--semantic-view-yaml is required (no sv_yaml_path in config for bootstrap-from-existing mode)")
+        sv_path = instance_path(rel)
     with open(sv_path, "r") as f:
         sv_model = parse_yaml(f.read())
     hints = extract_domain_hints(sv_model)

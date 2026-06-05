@@ -29,7 +29,7 @@ import time
 from datetime import datetime
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "evaluation"))
-from utils import get_connection, execute_sql, load_config, call_cortex_agent, call_cortex_analyst
+from utils import get_connection, execute_sql, load_config, call_cortex_agent, call_cortex_analyst, get_framework_config, get_semantic_views, get_agents
 
 
 def check_semantic_view_exists(conn, sv_name: str) -> dict:
@@ -265,11 +265,15 @@ def check_active_alerts(conn, mon_fqn) -> dict:
 def run_health_checks(environment: str) -> dict:
     config = load_config()
     env_config = config["environments"][environment]
-    database = env_config["database"]
-    sv_name = env_config["semantic_view"]
-    agent_name = env_config["agent_name"]
-    ev = config["eval"]
-    mon_fqn = f"{ev['database']}.{ev['monitoring_schema']}"
+    fw = get_framework_config()
+    mon_fqn = f"{fw['database']}.{fw['schema']}"
+
+    # Resolve SV/agent names: new format uses lists, old format uses scalar keys
+    svs = get_semantic_views(environment)
+    agents = get_agents(environment)
+    sv_name = svs[0]["fqn"] if svs else ""
+    agent_name = agents[0]["fqn"] if agents else ""
+    database = sv_name.split(".")[0] if sv_name else fw["database"]
 
     conn = get_connection(environment)
     checks = []

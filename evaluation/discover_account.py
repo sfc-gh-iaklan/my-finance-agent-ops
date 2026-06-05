@@ -100,6 +100,22 @@ def list_semantic_views(conn) -> list:
     return rows
 
 
+def list_databases(conn) -> list:
+    """Databases visible to the running role. Returns [] on error."""
+    rows = execute_sql(conn, "SHOW DATABASES")
+    if _is_error(rows):
+        return []
+    return rows
+
+
+def list_warehouses(conn) -> list:
+    """Warehouses visible to the running role. Returns [] on error."""
+    rows = execute_sql(conn, "SHOW WAREHOUSES")
+    if _is_error(rows):
+        return []
+    return rows
+
+
 def describe_agent(conn, agent_fqn: str) -> dict:
     """DESCRIBE AGENT for one agent; returns {"row": <raw>, "error": <str|None>}."""
     rows = execute_sql(conn, f"DESCRIBE AGENT {agent_fqn}")

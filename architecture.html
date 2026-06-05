@@ -1135,14 +1135,7 @@
       <tbody>
         <tr><td><code>bootstrap.py</code></td><td><strong>One-command setup</strong> — runs all SQL, deploys DEV SV/agent, runs first eval, deploys SiS dashboard</td></tr>
         <tr><td><code>setup/deploy.py</code></td><td>Deploy SV or agent to an environment (config-driven; used by bootstrap and CI)</td></tr>
-        <tr><td><code>01_create_databases.sql</code></td><td>DEV/PROD databases, eval results tables, warehouse</td></tr>
-        <tr><td><code>04_rbac_setup.sql</code></td><td>Analyst/Reviewer/Deployer/Admin roles + grants</td></tr>
-        <tr><td><code>05_observability_setup.sql</code></td><td>Views over snowflake.local.ai_observability_events</td></tr>
-        <tr><td><code>07_monitoring_tables.sql</code></td><td>Feedback, usage, health, alert, quality tables</td></tr>
-        <tr><td><code>08_monitoring_tasks.sql</code></td><td>Scheduled Tasks template (5 tasks + 2 stored procedures; bootstrap renders with configurable schedule profile)</td></tr>
-        <tr><td><code>09_monitoring_views.sql</code></td><td>Trend views for Snowsight dashboards</td></tr>
-        <tr><td><code>10_monitoring_alerts.sql</code></td><td>Snowflake Alerts (6 alerts with severity escalation)</td></tr>
-        <tr><td><code>11_interaction_quality_engine.sql</code></td><td>Rules-based interaction quality detection + 1 alert</td></tr>
+        <tr><td><code>00_framework_tables.sql</code></td><td>All framework objects: eval tables, monitoring tables, observability views, monitoring views, interaction quality engine, alerts, and tasks</td></tr>
         <tr><td><code>teardown.sql</code></td><td>Token-rendered full purge (python setup/bootstrap.py --render setup/teardown.sql)</td></tr>
       </tbody>
     </table>
