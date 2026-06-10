@@ -24,20 +24,17 @@ jobs:
   evaluate-agent:
     name: "Native Snowflake Agent Evaluation"
     runs-on: ubuntu-latest
+    environment: devops
     env:
       SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
       SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
       SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
       SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PASSPHRASE }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Resolve config
-        run: echo "Using config/environments.yaml"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -47,15 +44,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Deploy agent to DEV
-        run: python setup/deploy.py --target agent --environment dev
-
       - name: Run native Snowflake agent evaluation (GPA framework)
         run: |
+          BRANCH="${{ github.head_ref || github.ref_name }}"
           python evaluation/audit_agent.py \
             --environment dev \
-            --git-sha ${{ github.sha }} \
-            --git-branch ${{ github.head_ref }} \
+            --git-sha "${{ github.sha }}" \
+            --git-branch "$BRANCH" \
             --timeout 600 \
             --output agent_eval_results.json
 
@@ -65,9 +60,10 @@ jobs:
         with:
           name: agent-eval-results
           path: agent_eval_results.json
+          if-no-files-found: ignore
 
       - name: Comment PR with results
-        if: always()
+        if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -90,28 +86,24 @@ jobs:
               metricTable += `| ${metric} | ${(score || 0).toFixed(3)} | ${icon} |\n`;
             }
 
-            const snowsightLink = results.snowsight_url
-              ? `\n[View in Snowsight AI Observability](${results.snowsight_url})\n`
-              : '';
+            const body = [
+              `## Agent CI Results — Native GPA Evaluation ${status}`,
+              '',
+              'Uses Snowflake built-in `EXECUTE_AI_EVALUATION` with GPA framework metrics.',
+              '',
+              '| Metric | Average Score | Status |',
+              '|--------|---------------|--------|',
+              metricTable || '| _No metrics available_ | - | - |',
+              '',
+              '| Summary | Value |',
+              '|---------|-------|',
+              `| **Overall Average** | ${(results.overall_average || 0).toFixed(3)} |`,
+              `| **Threshold** | ${results.accuracy_threshold || 'N/A'}% |`,
+              `| **Total Records** | ${results.total_records || 'N/A'} |`,
+              '',
+              `> Commit: \`${{ github.sha }}\``,
+            ].join('\n');
 
-            const body = `## Agent CI Results — Native GPA Evaluation ${status}
-
-            Uses Snowflake's built-in \`EXECUTE_AI_EVALUATION\` with GPA framework metrics.
-
-            | Metric | Average Score | Status |
-            |--------|---------------|--------|
-            ${metricTable || '| _No metrics available_ | - | - |'}
-
-            | Summary | Value |
-            |---------|-------|
-            | **Overall Average** | ${(results.overall_average || 0).toFixed(3)} |
-            | **Threshold** | ${results.accuracy_threshold || 'N/A'}% |
-            | **Total Records** | ${results.total_records || 'N/A'} |
-            | **Low Scores (<0.5)** | ${results.low_score_count || 'N/A'} |
-            ${snowsightLink}
-
-            > Commit: \`${{ github.sha }}\` | Branch: \`${{ github.head_ref }}\`
-            `;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
