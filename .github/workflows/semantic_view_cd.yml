@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'semantic_views/**'
       - 'question_banks/semantic_view/**'
       - 'config/**'
       - 'evaluation/**'

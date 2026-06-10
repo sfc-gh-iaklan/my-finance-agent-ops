@@ -4,6 +4,14 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - 'semantic_views/**'
+      - 'question_banks/semantic_view/**'
+      - 'config/**'
+      - 'evaluation/**'
+  push:
+    branches-ignore: [main]
+    paths:
+      - 'semantic_views/**'
       - 'question_banks/semantic_view/**'
       - 'config/**'
       - 'evaluation/**'
