@@ -1,3 +1,8 @@
+---
+name: bootstrap-from-existing
+description: Bootstrap the AgentOps governance framework from an existing Snowflake environment. Use when a user wants to add evaluation, monitoring, or CI/CD governance on top of semantic views and/or Cortex Agents they already have deployed. Discovers existing semantic views and agents (SHOW SEMANTIC VIEWS/AGENTS IN ACCOUNT), lets the user select which to govern, generates config/environments.yaml, creates the framework's tables/views/alerts/tasks in a chosen schema, and seeds starter question banks. Triggers on phrases like "bootstrap from existing", "onboard my agents to AgentOps", "set up governance for my semantic view", "add monitoring to my Cortex Agent", "wire up the AgentOps framework".
+---
+
 # Bootstrap from Existing Environment
 
 This skill discovers a customer's existing Snowflake semantic views and agents, then generates a populated `environments.yaml` config and creates the framework's internal tables in a user-specified schema.

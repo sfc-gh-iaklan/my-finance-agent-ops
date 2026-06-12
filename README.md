@@ -67,11 +67,20 @@ A governance framework for **Semantic Views** and **Cortex Agents** in Snowflake
 
 ### Bootstrap with Cortex Code (Recommended)
 
-Open this repo in Cortex Code and invoke the bootstrap skill:
+The framework ships a bundled Cortex Code skill at `.cortex/skills/bootstrap-from-existing/`. Cortex Code does not auto-discover skills bundled in a repo, so you register it once per clone, then invoke it.
 
-```
-/bootstrap-from-existing
-```
+1. Open this repo in Cortex Code.
+
+2. Register the skill (one time per clone). Run this from the **repo root**:
+   ```
+   /skill add ./.cortex/skills/bootstrap-from-existing
+   ```
+   > `/skill add` resolves the relative path at add-time and stores an absolute path in `~/.snowflake/cortex/skills.json`. Run it from the repo root or the registration will point at the wrong location.
+
+3. Invoke the skill:
+   ```
+   /bootstrap-from-existing
+   ```
 
 The skill will:
 1. Discover your existing semantic views and agents (`SHOW SEMANTIC VIEWS/AGENTS IN ACCOUNT`)
@@ -79,6 +88,7 @@ The skill will:
 3. Ask for a database + schema to store framework tables
 4. Generate `config/environments.yaml`
 5. Execute the setup SQL to create framework objects
+6. Seed starter question banks from your semantic view structure
 
 ### Manual Setup
 
@@ -118,7 +128,8 @@ sql = sql.replace('{{WAREHOUSE}}', 'YOUR_WH')
 ```
 Snowflake_AgentOps_Framework/
 ├── .cortex/skills/                     # Cortex Code skills
-│   └── bootstrap-from-existing.md    # Interactive bootstrap from existing env
+│   └── bootstrap-from-existing/        # Interactive bootstrap from existing env
+│       └── SKILL.md                    # Skill definition (register with /skill add)
 ├── app/                                # App Runtime monitoring dashboard (Next.js)
 │   ├── app.yml                        # App Runtime manifest
 │   ├── package.json
