@@ -1,0 +1,50 @@
+questions:
+  - question: "How many customers do we have?"
+    expected_behavior: "Returns a count of all rows in the CUSTOMERS table"
+    difficulty: easy
+    tags: [customers, count, single-table]
+
+  - question: "What is the total balance across all accounts?"
+    expected_behavior: "Returns SUM(BALANCE) from the ACCOUNTS table"
+    difficulty: easy
+    tags: [accounts, balance, aggregation]
+
+  - question: "List all distinct account types"
+    expected_behavior: "Returns distinct ACCOUNT_TYPE values from ACCOUNTS"
+    difficulty: easy
+    tags: [accounts, distinct, single-table]
+
+  - question: "How many transactions were flagged?"
+    expected_behavior: "Returns count of transactions where IS_FLAGGED = TRUE"
+    difficulty: easy
+    tags: [transactions, flagged, filter]
+
+  - question: "What are the different customer segments?"
+    expected_behavior: "Returns distinct CUSTOMER_SEGMENT values from CUSTOMERS"
+    difficulty: easy
+    tags: [customers, segments, distinct]
+
+  - question: "How many portfolios have a high risk tolerance?"
+    expected_behavior: "Returns count of portfolios where RISK_TOLERANCE = 'High'"
+    difficulty: easy
+    tags: [portfolios, risk, filter]
+
+  - question: "What is the average credit score of our customers?"
+    expected_behavior: "Returns AVG(CREDIT_SCORE) from CUSTOMERS"
+    difficulty: easy
+    tags: [customers, credit-score, aggregation]
+
+  - question: "How many accounts are currently open?"
+    expected_behavior: "Returns count of accounts where ACCOUNT_STATUS = 'Open'"
+    difficulty: easy
+    tags: [accounts, status, filter]
+
+  - question: "What is the total value of all portfolios?"
+    expected_behavior: "Returns SUM(TOTAL_VALUE) from PORTFOLIOS"
+    difficulty: easy
+    tags: [portfolios, value, aggregation]
+
+  - question: "How many risk assessments have a critical risk level?"
+    expected_behavior: "Returns count of RISK_ASSESSMENTS where RISK_LEVEL = 'Critical'"
+    difficulty: easy
+    tags: [risk, critical, filter]

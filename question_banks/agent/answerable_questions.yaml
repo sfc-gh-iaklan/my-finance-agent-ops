@@ -1,0 +1,40 @@
+questions:
+  - question: "How many active customers do we have?"
+    ground_truth: "Count of customers where STATUS = 'Active'"
+    expected_tool: finance-analytics-assistant
+    difficulty: answerable
+
+  - question: "What is the total balance across all savings accounts?"
+    ground_truth: "SUM of BALANCE from ACCOUNTS where ACCOUNT_TYPE = 'Savings'"
+    expected_tool: finance-analytics-assistant
+    difficulty: answerable
+
+  - question: "Show me the top 3 customers by annual income"
+    ground_truth: "Top 3 rows from CUSTOMERS ordered by ANNUAL_INCOME DESC"
+    expected_tool: finance-analytics-assistant
+    difficulty: answerable
+
+  - question: "How many risk assessments are still under review?"
+    ground_truth: "Count of RISK_ASSESSMENTS where STATUS = 'Under Review'"
+    expected_tool: finance-analytics-assistant
+    difficulty: answerable
+
+  - question: "What is the average YTD return percentage for aggressive strategy portfolios?"
+    ground_truth: "AVG(YTD_RETURN_PCT) from PORTFOLIOS where STRATEGY = 'Aggressive'"
+    expected_tool: finance-analytics-assistant
+    difficulty: answerable
+
+  - question: "How many transactions were processed via the Mobile App channel?"
+    ground_truth: "Count of TRANSACTIONS where CHANNEL = 'Mobile App'"
+    expected_tool: finance-analytics-assistant
+    difficulty: answerable
+
+  - question: "Which customer has the highest credit score?"
+    ground_truth: "Customer row with MAX(CREDIT_SCORE)"
+    expected_tool: finance-analytics-assistant
+    difficulty: answerable
+
+  - question: "What is the total unrealized PnL across all portfolios?"
+    ground_truth: "SUM(UNREALIZED_PNL) from PORTFOLIOS"
+    expected_tool: finance-analytics-assistant
+    difficulty: answerable

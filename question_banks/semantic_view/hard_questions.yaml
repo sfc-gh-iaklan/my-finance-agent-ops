@@ -1,0 +1,40 @@
+questions:
+  - question: "Which customers have portfolios with negative unrealized PnL and also have critical risk assessments?"
+    expected_behavior: "Joins PORTFOLIOS, RISK_ASSESSMENTS, and CUSTOMERS; filters UNREALIZED_PNL < 0 and RISK_LEVEL = 'Critical'"
+    difficulty: hard
+    tags: [multi-table, join, portfolios, risk]
+
+  - question: "What is the average transaction amount by category for flagged transactions in the last 6 months?"
+    expected_behavior: "Filters TRANSACTIONS for IS_FLAGGED = TRUE and recent dates, groups by CATEGORY, computes AVG(AMOUNT)"
+    difficulty: hard
+    tags: [transactions, flagged, time-filter, aggregation]
+
+  - question: "Show me the top 5 customers by total portfolio value along with their number of open accounts"
+    expected_behavior: "Joins CUSTOMERS, PORTFOLIOS, and ACCOUNTS; aggregates TOTAL_VALUE per customer; counts open accounts; orders by value descending; limits to 5"
+    difficulty: hard
+    tags: [multi-table, top-n, join, aggregation]
+
+  - question: "What percentage of High Net Worth customers have at least one high-risk assessment?"
+    expected_behavior: "Joins CUSTOMERS and RISK_ASSESSMENTS; filters segment and risk level; computes percentage"
+    difficulty: hard
+    tags: [customers, risk, percentage, multi-table]
+
+  - question: "Compare average YTD return percentages across different investment strategies for active portfolios"
+    expected_behavior: "Filters PORTFOLIOS for STATUS = 'Active', groups by STRATEGY, computes AVG(YTD_RETURN_PCT)"
+    difficulty: hard
+    tags: [portfolios, strategy, comparison, aggregation]
+
+  - question: "Which accounts have the highest transaction volume but the lowest balance?"
+    expected_behavior: "Joins ACCOUNTS and TRANSACTIONS; counts transactions per account; identifies accounts with high count but low balance"
+    difficulty: hard
+    tags: [accounts, transactions, join, ranking]
+
+  - question: "Show month-over-month growth in total transaction amounts for the past 6 months"
+    expected_behavior: "Groups transactions by month, computes SUM(AMOUNT), calculates growth percentage vs prior month"
+    difficulty: hard
+    tags: [transactions, time-series, growth, calculation]
+
+  - question: "What is the distribution of risk scores by assessment method, broken down by risk type?"
+    expected_behavior: "Groups RISK_ASSESSMENTS by ASSESSMENT_METHOD and RISK_TYPE; computes AVG and distribution of RISK_SCORE"
+    difficulty: hard
+    tags: [risk, distribution, multi-dimension, aggregation]

@@ -1,0 +1,30 @@
+questions:
+  - question: "Show me risky customers"
+    expected_behavior: "Should ask for clarification: does 'risky' mean low credit score, high risk assessments, or flagged transactions?"
+    difficulty: ambiguous
+    tags: [clarification, risk, vague]
+
+  - question: "What's the performance like?"
+    expected_behavior: "Should ask for clarification: portfolio performance (YTD returns)? account performance? transaction throughput?"
+    difficulty: ambiguous
+    tags: [clarification, vague, multiple-interpretations]
+
+  - question: "How are we doing compared to last year?"
+    expected_behavior: "Should ask for clarification: what metric? (revenue, customer growth, portfolio returns, risk scores)"
+    difficulty: ambiguous
+    tags: [clarification, comparison, vague]
+
+  - question: "Which ones are inactive?"
+    expected_behavior: "Should ask for clarification: inactive customers? dormant accounts? closed portfolios?"
+    difficulty: ambiguous
+    tags: [clarification, pronoun-ambiguity]
+
+  - question: "What's the weather like in New York today?"
+    expected_behavior: "Should politely decline — out of scope for a finance analytics agent"
+    difficulty: ambiguous
+    tags: [out-of-scope, refusal]
+
+  - question: "Tell me a joke about banking"
+    expected_behavior: "Should politely decline — out of scope for a finance analytics agent"
+    difficulty: ambiguous
+    tags: [out-of-scope, refusal]

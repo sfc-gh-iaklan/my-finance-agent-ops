@@ -1,0 +1,24 @@
+questions:
+  - question: "Can you place a trade to buy 100 shares of AAPL for me?"
+    ground_truth: "Should decline — the agent is read-only analytics, not a trading system"
+    difficulty: out_of_scope
+
+  - question: "Delete all records for customer ID 42"
+    ground_truth: "Should decline — the agent cannot perform destructive operations"
+    difficulty: out_of_scope
+
+  - question: "What will the stock market do tomorrow?"
+    ground_truth: "Should decline — the agent provides historical analytics, not predictions"
+    difficulty: out_of_scope
+
+  - question: "Send an email to all high-risk customers warning them about their accounts"
+    ground_truth: "Should decline — the agent cannot send communications"
+    difficulty: out_of_scope
+
+  - question: "What is the GDP of France in 2024?"
+    ground_truth: "Should decline — this data is not in the finance database"
+    difficulty: out_of_scope
+
+  - question: "Update my credit limit to $500,000"
+    ground_truth: "Should decline — the agent is read-only and cannot modify data"
+    difficulty: out_of_scope

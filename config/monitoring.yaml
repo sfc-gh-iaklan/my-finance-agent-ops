@@ -1,0 +1,56 @@
+# Monitoring configuration — alert thresholds, schedules, and notifications.
+#
+# Rename this file to monitoring.yaml after reviewing values.
+
+monitoring:
+  schedules:
+    daily_usage_aggregation: "0 2 * * *"       # 02:00 UTC daily
+    daily_feedback_analysis: "15 2 * * *"       # 02:15 UTC daily
+    daily_health_checks: "0 6 * * *"            # 06:00 UTC daily
+    weekly_sv_eval: "0 4 * * 0"                 # 04:00 UTC Sunday
+    weekly_agent_eval: "0 5 * * 0"              # 05:00 UTC Sunday
+    weekly_full_eval_github: "0 3 * * 1"        # 03:00 UTC Monday (GitHub Actions)
+
+  alerts:
+    negative_feedback_spike:
+      threshold_pct: 25                          # alert when >25% negative
+      min_feedback_count: 5                      # need at least 5 responses
+      severity_critical_pct: 50                  # CRITICAL above 50%
+      schedule: "0 7 * * *"
+
+    accuracy_regression:
+      threshold_delta: -10                       # alert on >10% drop
+      severity_critical_delta: -20               # CRITICAL on >20% drop
+      schedule: "0 8 * * *"
+
+    latency_degradation:
+      p95_threshold_ms: 30000                    # alert when P95 > 30s
+      severity_critical_ms: 60000                # CRITICAL when P95 > 60s
+      schedule: "0 7 * * *"
+
+    cost_anomaly:
+      multiplier: 2.0                            # alert when daily > 2x 7-day avg
+      severity_critical_multiplier: 5.0          # CRITICAL when > 5x
+      schedule: "0 7 * * *"
+
+    error_spike:
+      threshold_pct: 10                          # alert when error rate > 10%
+      min_requests: 10                           # need at least 10 requests
+      severity_critical_pct: 25                  # CRITICAL above 25%
+      schedule: "0 7 * * *"
+
+    health_failure:
+      schedule: "30 6 * * *"                     # 30 min after health checks
+
+  health_checks:
+    latency_healthy_ms: 15000                    # agent/analyst latency OK
+    latency_degraded_ms: 30000                   # agent/analyst latency degraded
+    error_rate_healthy_pct: 5
+    error_rate_degraded_pct: 15
+    data_freshness_healthy_days: 90
+    data_freshness_degraded_days: 180
+
+  notifications:
+    enabled: false
+    email_recipients: []
+    # integration_name: {{PROJECT_NAME}}_EMAIL_ALERTS   # uncomment when configured
