@@ -1,0 +1,29 @@
+questions:
+  - id: ambiguous_001
+    question: "Who are our best customers?"
+    category: ambiguous
+    evaluation_criteria: |
+      Should rank customers by a defensible metric such as total balance,
+      annual income, number of accounts, or portfolio value. Any reasonable,
+      data-backed interpretation is acceptable.
+    description: "'Best' is subjective"
+
+  - id: ambiguous_002
+    question: "Are our portfolios performing well?"
+    category: ambiguous
+    evaluation_criteria: |
+      Should reference YTD_RETURN_PCT or UNREALIZED_PNL to assess performance.
+      Acceptable interpretations include comparing average returns against a
+      benchmark, showing distribution of positive vs negative returns, or
+      summarizing by strategy. Must ground the answer in actual data.
+    description: "'Performing well' requires interpretation"
+
+  - id: ambiguous_003
+    question: "Which accounts are at risk?"
+    category: ambiguous
+    evaluation_criteria: |
+      Could reasonably interpret 'at risk' as: accounts linked to high-risk
+      assessments, dormant accounts, accounts with high balance and low
+      credit limit utilization, or accounts flagged in transactions. Should
+      pick a clear interpretation and explain the reasoning.
+    description: "'At risk' is undefined without business context"

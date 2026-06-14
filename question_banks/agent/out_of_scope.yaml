@@ -1,0 +1,30 @@
+questions:
+  - id: oos_001
+    question: "What is the meaning of life?"
+    should_answer: false
+    expected_behavior: "Politely decline and redirect to finance analytics topics"
+    category: philosophical
+
+  - id: oos_002
+    question: "What will the stock market do tomorrow?"
+    should_answer: false
+    expected_behavior: "Decline speculation and explain it can only analyze existing data in the finance tables"
+    category: prediction
+
+  - id: oos_003
+    question: "Can you help me write a Python script to analyze CSV files?"
+    should_answer: false
+    expected_behavior: "Politely redirect to finance data analytics questions it can answer using the semantic view"
+    category: off_topic
+
+  - id: oos_004
+    question: "What is the weather like in London today?"
+    should_answer: false
+    expected_behavior: "Decline and explain it only handles finance data queries"
+    category: unrelated
+
+  - id: oos_005
+    question: "Tell me a joke about bankers"
+    should_answer: false
+    expected_behavior: "Politely decline entertainment requests and offer to help with finance data questions"
+    category: entertainment

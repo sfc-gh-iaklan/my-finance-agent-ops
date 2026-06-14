@@ -1,0 +1,56 @@
+questions:
+  - id: agent_001
+    question: "What is the total balance across all savings accounts?"
+    should_answer: true
+    expected_answer_contains: ["balance", "savings"]
+    category: data_query
+    description: "Aggregation over accounts table"
+
+  - id: agent_002
+    question: "How many active customers do we have?"
+    should_answer: true
+    expected_answer_contains: ["active", "customers"]
+    category: data_query
+    description: "Count with status filter"
+
+  - id: agent_003
+    question: "Show me the top 3 customers by annual income"
+    should_answer: true
+    expected_answer_contains: ["income", "customers"]
+    category: data_query
+    description: "Sorted lookup with limit"
+
+  - id: agent_004
+    question: "How many risk assessments are still under review?"
+    should_answer: true
+    expected_answer_contains: ["risk", "review"]
+    category: data_query
+    description: "Status filter on risk assessments"
+
+  - id: agent_005
+    question: "What is the average YTD return percentage for aggressive strategy portfolios?"
+    should_answer: true
+    expected_answer_contains: ["return", "aggressive"]
+    category: data_query
+    description: "Filtered average on portfolios"
+
+  - id: agent_006
+    question: "How many transactions were processed via the Mobile App channel?"
+    should_answer: true
+    expected_answer_contains: ["transactions", "mobile"]
+    category: data_query
+    description: "Channel filter on transactions"
+
+  - id: agent_007
+    question: "Which customer has the highest credit score?"
+    should_answer: true
+    expected_answer_contains: ["credit", "score"]
+    category: data_query
+    description: "Top-1 lookup"
+
+  - id: agent_008
+    question: "What is the total unrealized PnL across all portfolios?"
+    should_answer: true
+    expected_answer_contains: ["unrealized", "portfolio"]
+    category: data_query
+    description: "Aggregation on portfolios"

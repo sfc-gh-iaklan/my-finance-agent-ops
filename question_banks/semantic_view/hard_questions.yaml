@@ -1,0 +1,54 @@
+questions:
+  - id: hard_001
+    question: "Show me the top 3 customers by annual income"
+    category: hard
+    expected_sql: |
+      SELECT FIRST_NAME, LAST_NAME, ANNUAL_INCOME
+      FROM FINANCE_AI_DEV.ANALYTICS.CUSTOMERS
+      ORDER BY ANNUAL_INCOME DESC
+      LIMIT 3
+    description: "Sorting with limit"
+
+  - id: hard_002
+    question: "What is the average YTD return percentage for aggressive strategy portfolios?"
+    category: hard
+    expected_sql: |
+      SELECT AVG(YTD_RETURN_PCT) AS avg_ytd_return
+      FROM FINANCE_AI_DEV.ANALYTICS.PORTFOLIOS
+      WHERE STRATEGY = 'Aggressive'
+    description: "Aggregation with strategy filter"
+
+  - id: hard_003
+    question: "Which customer has the highest credit score?"
+    category: hard
+    expected_sql: |
+      SELECT FIRST_NAME, LAST_NAME, CREDIT_SCORE
+      FROM FINANCE_AI_DEV.ANALYTICS.CUSTOMERS
+      ORDER BY CREDIT_SCORE DESC
+      LIMIT 1
+    description: "Top-1 lookup"
+
+  - id: hard_004
+    question: "What is the average balance per account type for accounts opened in 2024?"
+    category: hard
+    expected_sql: |
+      SELECT ACCOUNT_TYPE, AVG(BALANCE) AS avg_balance
+      FROM FINANCE_AI_DEV.ANALYTICS.ACCOUNTS
+      WHERE YEAR(OPENED_DATE) = 2024
+      GROUP BY ACCOUNT_TYPE
+      ORDER BY avg_balance DESC
+    description: "Group by with date filter"
+
+  - id: hard_005
+    question: "Which customers have both a high-risk assessment and a portfolio with negative YTD returns?"
+    category: hard
+    expected_sql: |
+      SELECT DISTINCT c.FIRST_NAME, c.LAST_NAME
+      FROM FINANCE_AI_DEV.ANALYTICS.CUSTOMERS c
+      INNER JOIN FINANCE_AI_DEV.ANALYTICS.RISK_ASSESSMENTS r
+        ON c.CUSTOMER_ID = r.CUSTOMER_ID
+      INNER JOIN FINANCE_AI_DEV.ANALYTICS.PORTFOLIOS p
+        ON c.CUSTOMER_ID = p.CUSTOMER_ID
+      WHERE r.RISK_LEVEL IN ('High', 'Critical')
+        AND p.YTD_RETURN_PCT < 0
+    description: "Multi-table join with compound conditions"

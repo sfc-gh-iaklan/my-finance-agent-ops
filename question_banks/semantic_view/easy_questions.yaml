@@ -1,0 +1,44 @@
+questions:
+  - id: easy_001
+    question: "How many active customers do we have?"
+    category: easy
+    expected_sql: |
+      SELECT COUNT(*) AS active_customers
+      FROM FINANCE_AI_DEV.ANALYTICS.CUSTOMERS
+      WHERE STATUS = 'Active'
+    description: "Simple filtered count on CUSTOMERS table"
+
+  - id: easy_002
+    question: "What is the total balance across all savings accounts?"
+    category: easy
+    expected_sql: |
+      SELECT SUM(BALANCE) AS total_savings_balance
+      FROM FINANCE_AI_DEV.ANALYTICS.ACCOUNTS
+      WHERE ACCOUNT_TYPE = 'Savings'
+    description: "Single-table aggregation with filter"
+
+  - id: easy_003
+    question: "How many risk assessments are still under review?"
+    category: easy
+    expected_sql: |
+      SELECT COUNT(*) AS assessments_under_review
+      FROM FINANCE_AI_DEV.ANALYTICS.RISK_ASSESSMENTS
+      WHERE STATUS = 'Under Review'
+    description: "Simple filtered count on RISK_ASSESSMENTS"
+
+  - id: easy_004
+    question: "How many transactions were processed via the Mobile App channel?"
+    category: easy
+    expected_sql: |
+      SELECT COUNT(*) AS mobile_app_transactions
+      FROM FINANCE_AI_DEV.ANALYTICS.TRANSACTIONS
+      WHERE CHANNEL = 'Mobile App'
+    description: "Single-table count with channel filter"
+
+  - id: easy_005
+    question: "What is the total unrealized PnL across all portfolios?"
+    category: easy
+    expected_sql: |
+      SELECT SUM(UNREALIZED_PNL) AS total_unrealized_pnl
+      FROM FINANCE_AI_DEV.ANALYTICS.PORTFOLIOS
+    description: "Simple aggregation without filter"
