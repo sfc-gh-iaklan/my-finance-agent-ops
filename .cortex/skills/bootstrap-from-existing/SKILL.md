@@ -106,6 +106,17 @@ question_banks:
 
 Write this file using the Write tool to `config/environments.yaml`.
 
+#### Also render the threshold and monitoring configs
+
+The CI/CD pipelines and eval scripts REQUIRE `config/thresholds.yaml` to exist (`evaluation/utils.py` loads it directly; a missing file is a hard `FileNotFoundError`, not a soft default). The monitoring/alert setup uses `config/monitoring.yaml`. Both ship only as `.template` files, so you must render the real files now — otherwise the customer's first CI run fails before any threshold is even checked.
+
+For each of these, copy the template to the un-suffixed filename verbatim (the default values are sensible starting points the customer can tune later):
+
+1. Read `config/thresholds.yaml.template` → write its contents to `config/thresholds.yaml`.
+2. Read `config/monitoring.yaml.template` → write its contents to `config/monitoring.yaml`.
+
+Use the Write tool for both. Do not modify the values — just materialize the files so they are present and committable. Tell the customer these were created from defaults and where to tune them.
+
 ### Step 5: Create Framework Tables
 
 Read `setup/00_framework_tables.sql` and perform token substitution:
@@ -220,7 +231,7 @@ SHOW VIEWS IN <database>.<schema>;
 ```
 
 Present a summary:
-- Config written to: `config/environments.yaml`
+- Config written to: `config/environments.yaml`, `config/thresholds.yaml`, `config/monitoring.yaml`
 - Framework objects created in: `<database>.<schema>`
 - Tables: list them
 - Views: list them
@@ -231,10 +242,11 @@ Present a summary:
 
 Tell the user:
 1. Review the generated question banks in `question_banks/` — add/edit/remove questions as needed
-2. Run a first evaluation: `python evaluation/evaluate_semantic_view.py --environment dev`
-3. Run an audit: `python evaluation/audit_semantic_view.py --environment dev --live --semantic-view DB.SCHEMA.MY_SV`
-4. (Optional) Set up CI/CD — see `ci/README.md`
-5. (Optional) Deploy the monitoring dashboard: `cd app && snow app setup && snow app deploy`
+2. Review thresholds in `config/thresholds.yaml` — tune the DEV/PROD accuracy gates to your standards
+3. Run a first evaluation: `python evaluation/evaluate_semantic_view.py --environment dev`
+4. Run an audit: `python evaluation/audit_semantic_view.py --environment dev --live --semantic-view DB.SCHEMA.MY_SV`
+5. (Optional) Set up CI/CD — see `ci/README.md`
+6. (Optional) Deploy the monitoring dashboard: `cd app && snow app setup && snow app deploy`
 
 ## Important Notes
 
