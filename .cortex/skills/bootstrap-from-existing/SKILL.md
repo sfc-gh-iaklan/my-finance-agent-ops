@@ -106,6 +106,17 @@ question_banks:
 
 Write this file using the Write tool to `config/environments.yaml`.
 
+#### Also render the threshold and monitoring configs
+
+The CI/CD pipelines and eval scripts REQUIRE `config/thresholds.yaml` to exist (`evaluation/utils.py` loads it directly; a missing file is a hard `FileNotFoundError`, not a soft default). The monitoring/alert setup uses `config/monitoring.yaml`. Both ship only as `.template` files, so you must render the real files now — otherwise the customer's first CI run fails before any threshold is even checked.
+
+For each of these, copy the template to the un-suffixed filename verbatim (the default values are sensible starting points the customer can tune later):
+
+1. Read `config/thresholds.yaml.template` → write its contents to `config/thresholds.yaml`.
+2. Read `config/monitoring.yaml.template` → write its contents to `config/monitoring.yaml`.
+
+Use the Write tool for both. Do not modify the values — just materialize the files so they are present and committable. Tell the customer these were created from defaults and where to tune them.
+
 ### Step 5: Create Framework Tables
 
 Read `setup/00_framework_tables.sql` and perform token substitution:
@@ -209,7 +220,52 @@ If NO existing evaluation data was found, tell the user:
 - "No existing VQRs or eval datasets found. Generating starter question banks..."
 - Then suggest: `python evaluation/generate_question_bank.py --semantic-view-yaml <path>` to generate questions from the semantic view structure using an LLM.
 
-### Step 7: Verify & Report
+### Step 7: Set Up CI Access (only if a network policy is present)
+
+CI/CD runs on GitHub-hosted runners, which connect from dynamic Azure IPs. If the account enforces an IP-based network policy, those runners are blocked and the customer's first CI run fails with `250001 ... IP/Token ... is not allowed to access Snowflake`. Most accounts (and all trial accounts) have no network policy, so this step is usually a no-op.
+
+Check for an account-level network policy:
+```sql
+SHOW PARAMETERS LIKE 'NETWORK_POLICY' IN ACCOUNT;
+```
+
+If the `value` is empty, tell the user "No network policy detected — CI will connect with key-pair auth, nothing extra needed" and skip the rest of this step.
+
+If a network policy IS set, explain the situation and use `ask_user_question` to offer to set up a dedicated, secure CI service user:
+
+> "Your account restricts access by IP (`<policy_name>`). GitHub's CI runners use rotating IPs that can't be allowlisted. The standard secure fix is a dedicated CI service user that authenticates with a key pair (no password) and is exempt from the IP restriction — the exemption is scoped to this one non-human account, so your human logins stay protected. Set this up?"
+
+You must NOT weaken the account policy and you must NOT attach an allow-all policy to a human/admin user. Only ever scope the exemption to a dedicated service user.
+
+If the user agrees:
+
+1. Ask for the **public key** they will pair with the `SNOWFLAKE_PRIVATE_KEY` GitHub secret (the contents of their `snowflake_key.pub`, without the header/footer lines). Use `ask_user_question`, type text.
+
+2. Create a dedicated, key-pair-only service user (no password set):
+   ```sql
+   CREATE USER IF NOT EXISTS AGENTOPS_CI_USER
+     RSA_PUBLIC_KEY = '<pasted_public_key>'
+     DEFAULT_WAREHOUSE = '<framework_warehouse>'
+     DEFAULT_ROLE = '<minimal_role>'
+     COMMENT = 'Key-pair-only CI service user for AgentOps GitHub Actions';
+   ```
+
+3. Create a user-scoped allow-all network policy and attach it to ONLY this user (this overrides the account policy for this user alone):
+   ```sql
+   CREATE NETWORK POLICY IF NOT EXISTS AGENTOPS_CI_POLICY
+     ALLOWED_IP_LIST = ('0.0.0.0/0')
+     COMMENT = 'Allow-all for key-pair-only AgentOps CI service user. Safe: scoped to one non-human, key-pair-only account.';
+   ALTER USER AGENTOPS_CI_USER SET NETWORK_POLICY = AGENTOPS_CI_POLICY;
+   ```
+
+4. Grant the service user the minimal role the framework needs (the same role used for the framework schema — NOT ACCOUNTADMIN):
+   ```sql
+   GRANT ROLE <minimal_role> TO USER AGENTOPS_CI_USER;
+   ```
+
+5. Tell the user: set the `SNOWFLAKE_USER` GitHub secret to `AGENTOPS_CI_USER` (instead of their own username), and use the matching private key for `SNOWFLAKE_PRIVATE_KEY`. The rest of the account stays locked to the existing network policy.
+
+### Step 8: Verify & Report
 
 After all statements succeed, verify by running:
 ```sql
@@ -220,21 +276,22 @@ SHOW VIEWS IN <database>.<schema>;
 ```
 
 Present a summary:
-- Config written to: `config/environments.yaml`
+- Config written to: `config/environments.yaml`, `config/thresholds.yaml`, `config/monitoring.yaml`
 - Framework objects created in: `<database>.<schema>`
 - Tables: list them
 - Views: list them
 - Semantic views under governance: list FQNs
 - Agents under governance: list FQNs with their bound SVs
 
-### Step 8: Next Steps
+### Step 9: Next Steps
 
 Tell the user:
 1. Review the generated question banks in `question_banks/` — add/edit/remove questions as needed
-2. Run a first evaluation: `python evaluation/evaluate_semantic_view.py --environment dev`
-3. Run an audit: `python evaluation/audit_semantic_view.py --environment dev --live --semantic-view DB.SCHEMA.MY_SV`
-4. (Optional) Set up CI/CD — see `ci/README.md`
-5. (Optional) Deploy the monitoring dashboard: `cd app && snow app setup && snow app deploy`
+2. Review thresholds in `config/thresholds.yaml` — tune the DEV/PROD accuracy gates to your standards
+3. Run a first evaluation: `python evaluation/evaluate_semantic_view.py --environment dev`
+4. Run an audit: `python evaluation/audit_semantic_view.py --environment dev --live --semantic-view DB.SCHEMA.MY_SV`
+5. (Optional) Set up CI/CD — see `ci/README.md`
+6. (Optional) Deploy the monitoring dashboard: `cd app && snow app setup && snow app deploy`
 
 ## Important Notes
 
