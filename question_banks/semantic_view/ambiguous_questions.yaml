@@ -1,0 +1,30 @@
+questions:
+  - question: "Show me the best accounts."
+    expected_behavior: "Ambiguous — 'best' is undefined. The model should pick a reasonable metric (e.g. highest balance) or ask for clarification on the ranking criterion."
+    difficulty: ambiguous
+    tags: [clarification, ambiguous_metric]
+
+  - question: "How are our customers doing?"
+    expected_behavior: "Vague — no concrete metric. Should request clarification (e.g. by segment, balance, activity) rather than guess broadly."
+    difficulty: ambiguous
+    tags: [clarification, vague]
+
+  - question: "What is the risk?"
+    expected_behavior: "Underspecified — risk of what, for whom. Should ask which risk dimension (risk score, risk level, risk type) and scope."
+    difficulty: ambiguous
+    tags: [clarification, underspecified]
+
+  - question: "What's the weather like for our London customers today?"
+    expected_behavior: "Out of scope — no weather data in the semantic view. Should decline and state available finance topics."
+    difficulty: ambiguous
+    tags: [out_of_scope, refusal]
+
+  - question: "Compare this quarter to last quarter."
+    expected_behavior: "Ambiguous — 'compare' on which measure. Should clarify which metric and which entity to compare across the two quarters."
+    difficulty: ambiguous
+    tags: [clarification, comparison]
+
+  - question: "Which stocks should our customers buy?"
+    expected_behavior: "Out of scope — investment advice and individual securities are not in the data. Should decline and clarify scope."
+    difficulty: ambiguous
+    tags: [out_of_scope, advice]

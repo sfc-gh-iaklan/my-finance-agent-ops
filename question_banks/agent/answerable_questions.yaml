@@ -1,0 +1,35 @@
+questions:
+  - question: "How many customers are in the High Net Worth segment?"
+    ground_truth: "Counts customers where CUSTOMER_SEGMENT = 'High Net Worth'."
+    expected_tool: cortex_analyst_text_to_sql
+    difficulty: answerable
+
+  - question: "What is the total balance held in Investment accounts?"
+    ground_truth: "Sums BALANCE on ACCOUNTS filtered to ACCOUNT_TYPE = 'Investment'."
+    expected_tool: cortex_analyst_text_to_sql
+    difficulty: answerable
+
+  - question: "Show me the top 5 portfolios by total value."
+    ground_truth: "Orders PORTFOLIOS by TOTAL_VALUE descending, limit 5."
+    expected_tool: cortex_analyst_text_to_sql
+    difficulty: answerable
+
+  - question: "What is the average transaction amount for flagged transactions?"
+    ground_truth: "Averages AMOUNT on TRANSACTIONS where IS_FLAGGED = TRUE."
+    expected_tool: cortex_analyst_text_to_sql
+    difficulty: answerable
+
+  - question: "How many risk assessments of type Fraud Risk are still under review?"
+    ground_truth: "Counts RISK_ASSESSMENTS where RISK_TYPE = 'Fraud Risk' and STATUS = 'Under Review'."
+    expected_tool: cortex_analyst_text_to_sql
+    difficulty: answerable
+
+  - question: "What is the total account balance per customer segment?"
+    ground_truth: "Joins ACCOUNTS to CUSTOMERS, groups by CUSTOMER_SEGMENT, sums BALANCE. Currency values formatted to 2 decimals."
+    expected_tool: cortex_analyst_text_to_sql
+    difficulty: answerable
+
+  - question: "Which customers have portfolios with a negative YTD return?"
+    ground_truth: "Joins PORTFOLIOS to CUSTOMERS, filters YTD_RETURN_PCT < 0."
+    expected_tool: cortex_analyst_text_to_sql
+    difficulty: answerable
