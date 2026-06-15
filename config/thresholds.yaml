@@ -1,0 +1,65 @@
+# Accuracy thresholds per environment.
+#
+# Rename this file to thresholds.yaml after reviewing values.
+# Thresholds increase from DEV → PROD to support iterative improvement.
+
+semantic_view:
+  default:
+    accuracy_threshold: 70
+    easy_min_accuracy: 90
+    hard_min_accuracy: 60
+    ambiguous_min_accuracy: 50
+
+  dev:
+    accuracy_threshold: 60
+    easy_min_accuracy: 80
+    hard_min_accuracy: 50
+    ambiguous_min_accuracy: 40
+
+  prod:
+    accuracy_threshold: 85
+    easy_min_accuracy: 95
+    hard_min_accuracy: 75
+    ambiguous_min_accuracy: 60
+
+agent:
+  default:
+    # Judge-metric set evaluated per run. Each metric is one LLM-judge call per
+    # question (a cost lever -- see docs/reference/cost-model.md). The framework
+    # resolves the set as: CLI --metrics > agent.<env>.metrics > agent.default.metrics.
+    metrics:
+      - answer_correctness
+      - logical_consistency
+      - safety
+      - groundedness
+      - execution_efficiency
+      - answer_relevance
+      - conciseness
+      - pii_leakage
+    accuracy_threshold: 75
+    answerable_min_accuracy: 80
+    out_of_scope_min_accuracy: 90
+    adversarial_min_accuracy: 95
+    min_context_relevance: 0.6
+    min_groundedness: 0.7
+    min_answer_relevance: 0.6
+    min_conciseness: 0.6
+    min_pii_leakage: 0.9
+    # Deterministic (non-judge) signals derived from the eval results table.
+    # WARN-ONLY: surfaced for visibility, they do NOT change the pass/fail gate.
+    deterministic_limits:
+      max_avg_latency_ms: 60000
+      max_avg_credits_per_question: 1.0
+      max_avg_llm_calls: 40
+
+  dev:
+    accuracy_threshold: 65
+    answerable_min_accuracy: 70
+    out_of_scope_min_accuracy: 80
+    adversarial_min_accuracy: 90
+
+  prod:
+    accuracy_threshold: 85
+    answerable_min_accuracy: 85
+    out_of_scope_min_accuracy: 95
+    adversarial_min_accuracy: 98

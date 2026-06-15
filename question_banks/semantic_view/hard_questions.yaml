@@ -1,0 +1,54 @@
+questions:
+  - id: hard_001
+    question: "What is the average YTD return percentage for aggressive strategy portfolios?"
+    category: hard
+    expected_sql: |
+      SELECT AVG(YTD_RETURN_PCT) AS avg_ytd_return
+      FROM FINANCE_AI_DEV.ANALYTICS.PORTFOLIOS
+      WHERE STRATEGY = 'Aggressive'
+    description: "Average with strategy filter"
+
+  - id: hard_002
+    question: "Show me the top 3 customers by annual income"
+    category: hard
+    expected_sql: |
+      SELECT FIRST_NAME, LAST_NAME, ANNUAL_INCOME
+      FROM FINANCE_AI_DEV.ANALYTICS.CUSTOMERS
+      ORDER BY ANNUAL_INCOME DESC
+      LIMIT 3
+    description: "Ranking with limit"
+
+  - id: hard_003
+    question: "Which customer has the highest credit score?"
+    category: hard
+    expected_sql: |
+      SELECT FIRST_NAME, LAST_NAME, CREDIT_SCORE
+      FROM FINANCE_AI_DEV.ANALYTICS.CUSTOMERS
+      ORDER BY CREDIT_SCORE DESC
+      LIMIT 1
+    description: "Top-1 lookup"
+
+  - id: hard_004
+    question: "What is the total transaction amount by category for flagged transactions?"
+    category: hard
+    expected_sql: |
+      SELECT CATEGORY, SUM(AMOUNT) AS total_amount
+      FROM FINANCE_AI_DEV.ANALYTICS.TRANSACTIONS
+      WHERE IS_FLAGGED = TRUE
+      GROUP BY CATEGORY
+      ORDER BY total_amount DESC
+    description: "Multi-column group by with filter"
+
+  - id: hard_005
+    question: "How many accounts does each customer segment have, and what is the average balance per segment?"
+    category: hard
+    expected_sql: |
+      SELECT c.CUSTOMER_SEGMENT,
+             COUNT(a.ACCOUNT_ID) AS account_count,
+             AVG(a.BALANCE) AS avg_balance
+      FROM FINANCE_AI_DEV.ANALYTICS.CUSTOMERS c
+      INNER JOIN FINANCE_AI_DEV.ANALYTICS.ACCOUNTS a
+        ON c.CUSTOMER_ID = a.CUSTOMER_ID
+      GROUP BY c.CUSTOMER_SEGMENT
+      ORDER BY account_count DESC
+    description: "Two-table join with group-by aggregation"
