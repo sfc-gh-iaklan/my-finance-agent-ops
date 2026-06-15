@@ -306,13 +306,14 @@ If the user agrees:
    GRANT ROLE <minimal_role> TO USER AGENTOPS_CI_USER;
    ```
 
-5. Ensure that role can create the agent-evaluation objects at runtime. `audit_agent.py` calls Snowflake's native `EXECUTE_AI_EVALUATION`, which inside the framework schema (a) creates an eval-data table (`<AGENT>_EVAL_DATA`), (b) creates a config stage (`AGENT_EVAL_CONFIG_STAGE`), (c) creates an AI evaluation dataset, and (d) runs the agent **asynchronously via a task**. If the CI role does NOT own that schema (it usually won't), grant it all of these privileges — otherwise the agent CI fails with an insufficient-privilege error (e.g. "Failed to create evaluation task ... must have CREATE TASK"), even though the question banks are valid:
+5. Ensure that role can create the agent-evaluation objects at runtime. `audit_agent.py` calls Snowflake's native `EXECUTE_AI_EVALUATION`, which inside the framework schema (a) creates an eval-data table (`<AGENT>_EVAL_DATA`), (b) creates a config stage (`AGENT_EVAL_CONFIG_STAGE`), (c) creates an AI evaluation dataset, and (d) runs the agent **asynchronously via a task**. The evaluation runs as a multi-task DAG: a background INGESTION task invokes the agent and creates a file format, downstream tasks compute the metrics, and a finalizer writes results. If the CI role does NOT own that schema (it usually won't), grant it all of these privileges — otherwise a task in the DAG fails with an insufficient-privilege error (e.g. "must have CREATE TASK" or "must have CREATE FILE FORMAT") and the run silently hangs in `CREATED` until the script times out, even though the question banks are valid:
    ```sql
-   GRANT CREATE TABLE   ON SCHEMA  <framework_db>.<framework_schema> TO ROLE <minimal_role>;
-   GRANT CREATE STAGE   ON SCHEMA  <framework_db>.<framework_schema> TO ROLE <minimal_role>;
-   GRANT CREATE DATASET ON SCHEMA  <framework_db>.<framework_schema> TO ROLE <minimal_role>;
-   GRANT CREATE TASK    ON SCHEMA  <framework_db>.<framework_schema> TO ROLE <minimal_role>;
-   GRANT EXECUTE TASK   ON ACCOUNT                                   TO ROLE <minimal_role>;
+   GRANT CREATE TABLE       ON SCHEMA  <framework_db>.<framework_schema> TO ROLE <minimal_role>;
+   GRANT CREATE STAGE       ON SCHEMA  <framework_db>.<framework_schema> TO ROLE <minimal_role>;
+   GRANT CREATE DATASET     ON SCHEMA  <framework_db>.<framework_schema> TO ROLE <minimal_role>;
+   GRANT CREATE FILE FORMAT ON SCHEMA  <framework_db>.<framework_schema> TO ROLE <minimal_role>;
+   GRANT CREATE TASK        ON SCHEMA  <framework_db>.<framework_schema> TO ROLE <minimal_role>;
+   GRANT EXECUTE TASK       ON ACCOUNT                                 TO ROLE <minimal_role>;
    ```
    `EXECUTE TASK ON ACCOUNT` is an account-level privilege, so it must be granted by ACCOUNTADMIN. Skip any grant the role already holds; if the CI role owns the framework schema, ownership already implies the schema-level grants (but `EXECUTE TASK ON ACCOUNT` is still required regardless of ownership).
 
