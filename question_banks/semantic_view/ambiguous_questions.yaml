@@ -1,0 +1,27 @@
+questions:
+  - id: ambiguous_001
+    question: "Who are our best customers?"
+    category: ambiguous
+    evaluation_criteria: |
+      Should rank customers by a defensible metric such as total balance,
+      transaction volume, annual income, or credit score. Any reasonable,
+      data-backed interpretation is acceptable.
+    description: "'Best' is subjective"
+
+  - id: ambiguous_002
+    question: "Are our portfolios performing well?"
+    category: ambiguous
+    evaluation_criteria: |
+      Should reference a concrete performance metric like average YTD return,
+      unrealized PnL, or comparison to cost basis. Must provide data rather
+      than opinion. Any reasonable benchmark or aggregation is acceptable.
+    description: "'Well' is subjective without a benchmark"
+
+  - id: ambiguous_003
+    question: "Show me risky accounts"
+    category: ambiguous
+    evaluation_criteria: |
+      Should clarify or choose a reasonable interpretation of 'risky' — e.g.,
+      accounts with high-severity risk assessments, accounts with low credit
+      scores, or accounts with flagged transactions. Must use actual data.
+    description: "'Risky' needs clarification"
