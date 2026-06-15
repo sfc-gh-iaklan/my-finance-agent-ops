@@ -540,13 +540,24 @@ def run_agent_audit(
     config = load_config()
     env_config = config["environments"][environment]
     fw = get_framework_config()
-    database = fw["database"]
-    schema = fw["schema"]
 
     conn = get_connection(environment)
 
     parts = agent_fqn.split(".")
     agent_name_short = parts[-1] if parts else agent_fqn
+
+    # Native EXECUTE_AI_EVALUATION resolves the agent relative to the session's
+    # database/schema and runs its metric-computation tasks there, so the agent
+    # evaluation must run in the AGENT's own database/schema -- not the
+    # framework schema. Running it in the framework schema makes metric
+    # computation fail with "Cortex Agent <db>.<framework_schema>.<agent> does
+    # not exist", leaving the run stuck and the overall eval failing.
+    if len(parts) == 3:
+        database, schema = parts[0], parts[1]
+    else:
+        database, schema = fw["database"], fw["schema"]
+    conn.cursor().execute(f"USE DATABASE {database}")
+    conn.cursor().execute(f"USE SCHEMA {database}.{schema}")
 
     run_name = f"{agent_name_short}_eval_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     stage_name = f"{database}.{schema}.AGENT_EVAL_CONFIG_STAGE"

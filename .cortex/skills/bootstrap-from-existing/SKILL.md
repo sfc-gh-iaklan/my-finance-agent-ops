@@ -306,13 +306,26 @@ If the user agrees:
    GRANT ROLE <minimal_role> TO USER AGENTOPS_CI_USER;
    ```
 
-5. Ensure that role can create the agent-evaluation objects at runtime. `audit_agent.py` creates an eval-data table (`<AGENT>_EVAL_DATA`), a config stage (`AGENT_EVAL_CONFIG_STAGE`), and an AI evaluation dataset inside the framework schema on every run. If the CI role does NOT own that schema (it usually won't), grant it these creation privileges — otherwise the agent CI fails with an insufficient-privilege error when it tries to create the stage/dataset, even though the question banks are valid:
+5. Grant the role the privileges native agent evaluation needs. `audit_agent.py` calls Snowflake's native `EXECUTE_AI_EVALUATION`, which runs **in the agent's own database and schema** (the metric judges resolve the agent relative to the session schema, so the eval must run where the agent lives — NOT in the framework schema). It creates an eval-data table, a config stage, an evaluation dataset, and a multi-task DAG in that schema, then invokes the agent and computes metrics. For **each governed agent** selected in Step 2, grant the CI role the following on the agent's own database/schema/object:
    ```sql
-   GRANT CREATE TABLE   ON SCHEMA <framework_db>.<framework_schema> TO ROLE <minimal_role>;
-   GRANT CREATE STAGE   ON SCHEMA <framework_db>.<framework_schema> TO ROLE <minimal_role>;
-   GRANT CREATE DATASET ON SCHEMA <framework_db>.<framework_schema> TO ROLE <minimal_role>;
+   GRANT USAGE              ON DATABASE <agent_db>                  TO ROLE <minimal_role>;
+   GRANT USAGE              ON SCHEMA   <agent_db>.<agent_schema>   TO ROLE <minimal_role>;
+   GRANT CREATE TABLE       ON SCHEMA   <agent_db>.<agent_schema>   TO ROLE <minimal_role>;
+   GRANT CREATE STAGE       ON SCHEMA   <agent_db>.<agent_schema>   TO ROLE <minimal_role>;
+   GRANT CREATE DATASET     ON SCHEMA   <agent_db>.<agent_schema>   TO ROLE <minimal_role>;
+   GRANT CREATE FILE FORMAT ON SCHEMA   <agent_db>.<agent_schema>   TO ROLE <minimal_role>;
+   GRANT CREATE TASK        ON SCHEMA   <agent_db>.<agent_schema>   TO ROLE <minimal_role>;
+   GRANT USAGE              ON AGENT    <agent_fqn>                 TO ROLE <minimal_role>;
+   GRANT MONITOR            ON AGENT    <agent_fqn>                 TO ROLE <minimal_role>;
+   GRANT EXECUTE TASK       ON ACCOUNT                              TO ROLE <minimal_role>;
    ```
-   (Skip any grant the role already holds; if the CI role owns the framework schema, ownership already implies all three.)
+   Why each is needed, and the failure mode if missing (each was hit in this order while debugging a real run):
+   - **CREATE TABLE / STAGE / DATASET / FILE FORMAT / TASK** on the agent's schema — the eval builds these objects and a task DAG there at runtime. Missing any one makes a DAG task fail (e.g. "must have CREATE TASK" / "must have CREATE FILE FORMAT") and the run silently hangs in `CREATED` until the script times out.
+   - **USAGE + MONITOR on the agent** — `EXECUTE_AI_EVALUATION` needs both; `USAGE` alone makes `START` fail with a misleading `Run <name> not found for object ... type CORTEX AGENT`. `MONITOR` is read-only, so the customer's agent stays under their ownership.
+   - **EXECUTE TASK ON ACCOUNT** — account-level, so it must be granted by ACCOUNTADMIN. Required even if the role owns the schema.
+   - The role must also reach every tool the agent uses (e.g. `SELECT` on the bound semantic view's tables and `REFERENCES`/`SELECT` on the semantic view) — the governed-object grants cover this.
+
+   (Skip any grant the role already holds. If the CI role already owns the agent's schema, ownership implies the schema-level grants, but `USAGE`/`MONITOR` on the agent and `EXECUTE TASK ON ACCOUNT` are still required.)
 
 6. Tell the user: set the `SNOWFLAKE_USER` GitHub secret to `AGENTOPS_CI_USER` (instead of their own username), and use the matching private key for `SNOWFLAKE_PRIVATE_KEY`. The rest of the account stays locked to the existing network policy.
 
